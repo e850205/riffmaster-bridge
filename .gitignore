@@ -1,0 +1,8 @@
+.venv/
+.build/
+.claude/
+.swiftpm/
+*.plist
+!RiffMasterHID/Resources/*.entitlements
+calibrate.log
+.DS_Store
