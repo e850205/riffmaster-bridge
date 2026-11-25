@@ -2,7 +2,35 @@
 
 Use the **PDP RiffMaster wireless guitar for Xbox** (USB dongle `0e6f:0248`) on macOS, which has no driver for it.
 
-## Keyboard bridge (works today)
+## Two guitars in Clone Hero (OpenJoystickDriver) — recommended
+
+[OpenJoystickDriver](https://github.com/xsyetopz/OpenJoystickDriver) (OJD) already holds Apple's virtual-HID entitlement and speaks the dongle's Xbox (GIP) protocol, so each guitar shows up as its own gamepad. No code from this repo runs in this setup; keep the keyboard bridge stopped, because OJD needs the dongles.
+
+1. Install OJD, open it, and grant the permissions it asks for. Each dongle appears under Controllers.
+2. Publish the guitars as "Xbox Wireless Controller" (the form Clone Hero reads):
+   ```sh
+   ojd virtual set game-controller-compatible 0E6F:0248
+   ```
+3. Import and activate the profile in this repo:
+   ```sh
+   ojd profile import ojd-guitar-profile.plist
+   ojd profile activate Guitar
+   ```
+4. In Clone Hero press Space, pick a player, **Assign Controller**, then bind in the **Controller** column (not Keyboard): the five frets, Strum Up/Down, Start (Menu), Star Power (View) and Whammy.
+
+`ojd` is the app's own binary (`/Applications/OpenJoystickDriver.app/Contents/MacOS/OpenJoystickDriver`) unless you install its command-line tool.
+
+Why the profile is needed: OJD reads the guitar as a standard Xbox pad, so the fret bytes also land on the right trigger (yellow, blue and orange collide) and tilt and whammy share the left trigger. The profile passes only the real buttons, drops the right trigger, and splits the left trigger: tilt alone moves it to 16–25 %, which presses View (star power); any whammy pushes it to 100 %.
+
+| Guitar | Virtual gamepad |
+|---|---|
+| Green, red, yellow, blue, orange | A, B, Y, X, LB |
+| Strum / d-pad | D-pad |
+| Menu, View | Start, Back |
+| Whammy | Left trigger (effectively on/off) |
+| Tilt neck up | Back (star power) |
+
+## Keyboard bridge (single player, no extra software)
 
 `riffmaster_bridge.py` talks to the dongle with libusb, sends the Xbox (GIP) power-on and PDP auth packets that start the input stream, and turns guitar input into key presses. Supports up to two dongles and reconnects automatically.
 
@@ -31,7 +59,7 @@ The terminal app needs Accessibility permission (System Settings → Privacy & S
 
 ## Virtual gamepad helper (`RiffMasterHID/`)
 
-A Swift tool that presents each guitar as its own HID gamepad via CoreHID `HIDVirtualDevice`, with an analog whammy bar, so two players work in Clone Hero. It requires the `com.apple.developer.hid.virtual.device` entitlement from Apple. Until that's granted, `--dry-run` prints decoded guitar input. See [RiffMasterHID/README.md](RiffMasterHID/README.md).
+A Swift tool that presents each guitar as its own HID gamepad via CoreHID `HIDVirtualDevice`, with an analog whammy bar, so two players work in Clone Hero without OJD. It requires the `com.apple.developer.hid.virtual.device` entitlement from Apple. Until that's granted, `--dry-run` prints decoded guitar input. See [RiffMasterHID/README.md](RiffMasterHID/README.md).
 
 ## Input report reference
 
